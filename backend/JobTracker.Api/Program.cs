@@ -86,11 +86,12 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Swagger is left enabled in production here (not just Development) so
+// this portfolio project is easy to demo and explore live. A real
+// production API handling sensitive data would usually restrict or
+// disable this, since it publicly documents your entire API surface.
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors(CorsPolicy);

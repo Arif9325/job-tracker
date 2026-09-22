@@ -1,17 +1,25 @@
 :root {
   --bg: #0f172a;
   --surface: #1e293b;
+  --surface-hover: #253449;
   --border: #334155;
   --text: #e2e8f0;
   --text-dim: #94a3b8;
   --accent: #3b82f6;
   --accent-hover: #2563eb;
   --danger: #ef4444;
-  --radius: 8px;
+  --radius: 10px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  /* Respect the device's own text-size setting instead of a fixed px
+     base, and keep content clear of notches/status bars on mobile. */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -19,19 +27,27 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
 button {
   cursor: pointer;
   border: none;
   border-radius: var(--radius);
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.1rem;
   background: var(--accent);
   color: white;
   font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s ease, transform 0.1s ease;
+  /* Comfortable tap target on touch devices, per accessibility guidance. */
+  min-height: 40px;
 }
 button:hover {
   background: var(--accent-hover);
+}
+button:active {
+  transform: scale(0.98);
 }
 button.secondary {
   background: transparent;
@@ -226,4 +242,116 @@ label {
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 0.5rem;
+}
+
+/* ============================================================
+   Responsive breakpoints
+   ============================================================ */
+
+/* Tablet and small laptop: tighten spacing, stats wrap to 3-per-row. */
+@media (max-width: 800px) {
+  .dashboard {
+    padding: 1.5rem 1rem;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Phones: stack the header, let the toolbar wrap, and turn the table
+   into a stack of cards — a plain HTML table just doesn't work at
+   this width, there's nowhere for six columns to go. */
+@media (max-width: 640px) {
+  .dashboard {
+    padding: 1.25rem 0.85rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .dashboard-header h1 {
+    font-size: 1.4rem;
+  }
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  .stat-card {
+    padding: 0.75rem;
+  }
+  .stat-value {
+    font-size: 1.3rem;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+  }
+  .toolbar > label {
+    flex: 1 1 45%;
+  }
+  .toolbar > button {
+    margin-left: 0;
+    flex: 1 1 100%;
+    order: -1; /* put "Add application" first/on top on mobile */
+  }
+
+  /* Table -> stacked cards. Each row becomes its own card; each cell
+     becomes a labeled line inside it, using the column name from
+     ApplicationTable's data-label attribute since there's no room
+     for a header row anymore. */
+  .application-table thead {
+    display: none;
+  }
+  .application-table,
+  .application-table tbody,
+  .application-table tr,
+  .application-table td {
+    display: block;
+    width: 100%;
+  }
+  .application-table tr {
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+  }
+  .application-table td {
+    border-bottom: none;
+    padding: 0.25rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .application-table td::before {
+    content: attr(data-label);
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .application-table .row-actions {
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+  }
+  .application-table .row-actions::before {
+    content: none;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    overflow-y: auto;
+  }
+  .modal-backdrop {
+    padding: 0;
+  }
 }

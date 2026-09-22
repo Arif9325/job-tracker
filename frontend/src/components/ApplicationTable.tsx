@@ -33,13 +33,13 @@ export function ApplicationTable({ applications, onEdit, onDelete }: Props) {
       <tbody>
         {applications.map((app) => (
           <tr key={app.id}>
-            <td>{app.company}</td>
-            <td>{app.role}</td>
-            <td>
+            <td data-label="Company">{app.company}</td>
+            <td data-label="Role">{app.role}</td>
+            <td data-label="Status">
               <StatusBadge status={app.status} />
             </td>
-            <td>{new Date(app.dateApplied).toLocaleDateString()}</td>
-            <td>{daysSince(app.dateApplied)}</td>
+            <td data-label="Applied">{new Date(app.dateApplied).toLocaleDateString()}</td>
+            <td data-label="Days since">{daysSince(app.dateApplied)}</td>
             <td className="row-actions">
               <button className="link-button" onClick={() => onEdit(app)}>
                 Edit

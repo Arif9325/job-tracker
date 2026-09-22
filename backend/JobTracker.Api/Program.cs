@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using JobTracker.Api.Data;
 using JobTracker.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -42,21 +43,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // --- CORS ---
-// The React dev server runs on a different port than the API, so the
-// browser treats it as a different origin and blocks requests unless
-// we explicitly allow it.
+// The frontend runs on a different origin than the API (a different
+// port locally, a different domain in production), so the browser
+// blocks requests unless we explicitly allow that origin. Read it from
+// configuration so the deployed URL can be set via Azure App Service's
+// "Configuration" settings without needing a code change/redeploy.
 const string CorsPolicy = "FrontendPolicy";
+var allowedOrigin = builder.Configuration["Frontend:Origin"] ?? "http://localhost:5173";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicy, policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(allowedOrigin)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-builder.Services.AddControllers();
+// By default System.Text.Json sends/expects enums (like ApplicationStatus)
+// as their underlying number. The frontend works with the string names
+// ("Applied", "Interviewing", ...) instead, since that's far more
+// readable in the browser's network tab and in the TypeScript types —
+// so we tell the serializer to use string names on both ends here.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

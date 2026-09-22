@@ -6,7 +6,10 @@ import type {
   UpdateJobApplicationInput,
 } from "./types";
 
-const API_BASE = "http://localhost:5203/api";
+// In production (Vercel) this comes from the VITE_API_BASE_URL env var,
+// set to the deployed Azure API's URL. Locally it falls back to the
+// dev API running on your machine.
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5203/api";
 
 // A small wrapper around fetch that: builds the full URL, attaches the
 // JWT (if we have one) as an Authorization header, and throws a real

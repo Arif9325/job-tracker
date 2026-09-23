@@ -7,6 +7,7 @@ export function StatsSummary({ stats }: { stats: ApplicationStats }) {
     { label: "Interviewing", value: stats.interviewing, className: "stat-interviewing" },
     { label: "Offers", value: stats.offer, className: "stat-offer" },
     { label: "Rejected", value: stats.rejected, className: "stat-rejected" },
+    { label: "Overdue follow-ups", value: stats.overdueFollowUps, className: "stat-overdue" },
   ];
 
   return (

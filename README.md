@@ -1,5 +1,7 @@
 # Job Application Tracker
 
+🔗 **[Live demo](https://job-tracker-xi-lovat.vercel.app)** · **[API docs (Swagger)](https://job-tracker-api-2026-hsfqerabc7h5f3ce.westus3-01.azurewebsites.net/swagger)**
+
 A full-stack app for tracking job applications — company, role, status,
 dates, and notes — with authentication, filtering/sorting, and a live
 stats dashboard.

@@ -9,6 +9,8 @@ public class JobApplication
     public DateTime DateApplied { get; set; }
     public string? PostingUrl { get; set; }
     public string? Notes { get; set; }
+    public DateTime? NextFollowUpDate { get; set; }
+    public bool IsArchived { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

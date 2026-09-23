@@ -12,6 +12,8 @@ public record JobApplicationDto(
     DateTime DateApplied,
     string? PostingUrl,
     string? Notes,
+    DateTime? NextFollowUpDate,
+    bool IsArchived,
     DateTime CreatedAt,
     DateTime UpdatedAt
 );
@@ -23,7 +25,8 @@ public record CreateJobApplicationDto(
     ApplicationStatus Status,
     DateTime DateApplied,
     string? PostingUrl,
-    string? Notes
+    string? Notes,
+    DateTime? NextFollowUpDate
 );
 
 // What the client sends us to update an existing one.
@@ -33,7 +36,8 @@ public record UpdateJobApplicationDto(
     ApplicationStatus Status,
     DateTime DateApplied,
     string? PostingUrl,
-    string? Notes
+    string? Notes,
+    DateTime? NextFollowUpDate
 );
 
 // Summary counts for the dashboard.
@@ -42,5 +46,15 @@ public record ApplicationStatsDto(
     int Applied,
     int Interviewing,
     int Offer,
-    int Rejected
+    int Rejected,
+    int OverdueFollowUps
+);
+
+// A single page of results, plus enough information for the client to
+// build pagination controls without a separate "how many total" call.
+public record PagedResultDto<T>(
+    List<T> Items,
+    int TotalCount,
+    int Page,
+    int PageSize
 );

@@ -27,9 +27,14 @@ public class ApplicationsController : ControllerBase
             ?? throw new InvalidOperationException("No user id claim on token."));
 
     [HttpGet]
-    public async Task<ActionResult<List<JobApplicationDto>>> GetAll()
+    public async Task<ActionResult<PagedResultDto<JobApplicationDto>>> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool includeArchived = false)
     {
-        return Ok(await _service.GetAllForUserAsync(CurrentUserId));
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        return Ok(await _service.GetAllForUserAsync(CurrentUserId, page, pageSize, includeArchived));
     }
 
     [HttpGet("{id:int}")]
@@ -53,6 +58,23 @@ public class ApplicationsController : ControllerBase
         return updated is null ? NotFound() : Ok(updated);
     }
 
+    // The everyday "remove this" action — soft delete, reversible.
+    [HttpPost("{id:int}/archive")]
+    public async Task<IActionResult> Archive(int id)
+    {
+        var ok = await _service.ArchiveAsync(CurrentUserId, id);
+        return ok ? NoContent() : NotFound();
+    }
+
+    [HttpPost("{id:int}/restore")]
+    public async Task<IActionResult> Restore(int id)
+    {
+        var ok = await _service.RestoreAsync(CurrentUserId, id);
+        return ok ? NoContent() : NotFound();
+    }
+
+    // Permanent delete — only succeeds on an application that's already
+    // archived, enforced one layer down in the service.
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

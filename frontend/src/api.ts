@@ -1,3 +1,4 @@
+import { getToken } from "./storage";
 import type {
   ApplicationStats,
   AuthResponse,
@@ -19,7 +20,7 @@ async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -50,10 +51,10 @@ export const authApi = {
       body: JSON.stringify({ email, password }),
     }),
 
-  login: (email: string, password: string) =>
+  login: (email: string, password: string, rememberMe: boolean) =>
     request<AuthResponse>("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     }),
 };
 

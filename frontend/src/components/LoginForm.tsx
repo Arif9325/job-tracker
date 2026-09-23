@@ -6,6 +6,7 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -14,8 +15,8 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
     setError(null);
     setLoading(true);
     try {
-      const result = await authApi.login(email, password);
-      login(result.token, result.email);
+      const result = await authApi.login(email, password, rememberMe);
+      login(result.token, result.email, rememberMe);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -44,6 +45,14 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+      </label>
+      <label className="checkbox-label">
+        <input
+          type="checkbox"
+          checked={rememberMe}
+          onChange={(e) => setRememberMe(e.target.checked)}
+        />
+        Remember me on this device
       </label>
       <button type="submit" disabled={loading}>
         {loading ? "Logging in..." : "Log in"}

@@ -1,29 +1,27 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { clearAuth, getEmail, saveAuth } from "../storage";
 
 interface AuthContextValue {
   email: string | null;
   isAuthenticated: boolean;
-  login: (token: string, email: string) => void;
+  login: (token: string, email: string, remember: boolean) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Initialize from localStorage so a page refresh doesn't log you out.
-  const [email, setEmail] = useState<string | null>(() =>
-    localStorage.getItem("email")
-  );
+  // Initialize from storage (checks localStorage, then sessionStorage)
+  // so a page refresh doesn't log you out either way.
+  const [email, setEmail] = useState<string | null>(() => getEmail());
 
-  function login(token: string, userEmail: string) {
-    localStorage.setItem("token", token);
-    localStorage.setItem("email", userEmail);
+  function login(token: string, userEmail: string, remember: boolean) {
+    saveAuth(token, userEmail, remember);
     setEmail(userEmail);
   }
 
   function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("email");
+    clearAuth();
     setEmail(null);
   }
 

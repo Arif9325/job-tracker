@@ -21,7 +21,10 @@ export function RegisterForm({ onSwitchToLogin }: { onSwitchToLogin: () => void 
     setLoading(true);
     try {
       const result = await authApi.register(email, password);
-      login(result.token, result.email);
+      // Registration always gets a short-lived, tab-scoped session —
+      // "remember me" is a choice offered on the login form for
+      // returning visits, not the initial signup.
+      login(result.token, result.email, false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {

@@ -13,11 +13,13 @@ public class AuthController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly ITokenService _tokenService;
+    private readonly ILoginAttemptTracker _loginAttemptTracker;
 
-    public AuthController(AppDbContext db, ITokenService tokenService)
+    public AuthController(AppDbContext db, ITokenService tokenService, ILoginAttemptTracker loginAttemptTracker)
     {
         _db = db;
         _tokenService = tokenService;
+        _loginAttemptTracker = loginAttemptTracker;
     }
 
     [HttpPost("register")]
@@ -58,12 +60,29 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
         var emailNormalized = dto.Email.Trim().ToLowerInvariant();
+
+        // Checked before touching the database at all — a locked-out
+        // email gets rejected immediately regardless of whether the
+        // password given this time happens to be correct.
+        if (_loginAttemptTracker.IsLockedOut(emailNormalized, out var retryAfter))
+        {
+            var minutes = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes));
+            Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+            return StatusCode(StatusCodes.Status429TooManyRequests,
+                $"Too many failed login attempts. Try again in {minutes} minute(s).");
+        }
+
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == emailNormalized);
 
         // Deliberately vague error message — we don't want to reveal
         // whether the email exists at all to someone guessing accounts.
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        {
+            _loginAttemptTracker.RecordFailure(emailNormalized);
             return Unauthorized("Invalid email or password.");
+        }
+
+        _loginAttemptTracker.RecordSuccess(emailNormalized);
 
         // "Remember me" controls how long the TOKEN stays valid; the
         // frontend separately controls WHERE it's stored (localStorage

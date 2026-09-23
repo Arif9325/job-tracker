@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { ALL_STATUSES, type ApplicationStats, type ApplicationStatus, type JobApplication } from "../types";
 import { ApplicationForm, type ApplicationFormValues } from "./ApplicationForm";
 import { ApplicationTable } from "./ApplicationTable";
+import { Logo } from "./Logo";
 import { StatsSummary } from "./StatsSummary";
 
 type SortKey = "dateApplied" | "company" | "status";
@@ -107,7 +108,10 @@ export function Dashboard() {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h1>Job Application Tracker</h1>
+        <div className="dashboard-brand">
+          <Logo size={32} />
+          <h1>JobTrail</h1>
+        </div>
         <div className="header-right">
           <span className="user-email">{email}</span>
           <button className="secondary" onClick={logout}>

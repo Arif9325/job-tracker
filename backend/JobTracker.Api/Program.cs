@@ -22,6 +22,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // easy to unit test in isolation.
 builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+// Singleton: login attempt counts need to be shared across every
+// request, not recreated per-request like a Scoped service would be.
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ILoginAttemptTracker, LoginAttemptTracker>();
 
 // --- JWT authentication ---
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "dev-only-change-me-in-production-please";

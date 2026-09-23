@@ -8,6 +8,7 @@ export interface ApplicationFormValues {
   dateApplied: string; // yyyy-mm-dd, matching <input type="date">
   postingUrl: string;
   notes: string;
+  nextFollowUpDate: string; // yyyy-mm-dd, or "" for none
 }
 
 interface Props {
@@ -28,6 +29,7 @@ export function ApplicationForm({ initial, onSubmit, onCancel }: Props) {
     dateApplied: initial ? toDateInputValue(initial.dateApplied) : toDateInputValue(new Date().toISOString()),
     postingUrl: initial?.postingUrl ?? "",
     notes: initial?.notes ?? "",
+    nextFollowUpDate: initial?.nextFollowUpDate ? toDateInputValue(initial.nextFollowUpDate) : "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +95,15 @@ export function ApplicationForm({ initial, onSubmit, onCancel }: Props) {
           value={values.dateApplied}
           onChange={(e) => update("dateApplied", e.target.value)}
           required
+        />
+      </label>
+
+      <label>
+        Next follow-up (optional)
+        <input
+          type="date"
+          value={values.nextFollowUpDate}
+          onChange={(e) => update("nextFollowUpDate", e.target.value)}
         />
       </label>
 

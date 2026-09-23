@@ -47,7 +47,10 @@ public class AuthController : ControllerBase
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
 
-        var token = _tokenService.CreateToken(user);
+        // A fresh registration gets a short-lived token by default — the
+        // person is already sitting right there; "remember me" is a
+        // choice offered on the login form for returning visits instead.
+        var token = _tokenService.CreateToken(user, TimeSpan.FromHours(12));
         return Ok(new AuthResponseDto(token, user.Email));
     }
 
@@ -62,7 +65,13 @@ public class AuthController : ControllerBase
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized("Invalid email or password.");
 
-        var token = _tokenService.CreateToken(user);
+        // "Remember me" controls how long the TOKEN stays valid; the
+        // frontend separately controls WHERE it's stored (localStorage
+        // vs sessionStorage) so it also survives closing the browser.
+        // Both pieces have to agree, or a long-lived token stored only
+        // per-tab would still vanish on browser close, or vice versa.
+        var expiresIn = dto.RememberMe ? TimeSpan.FromDays(30) : TimeSpan.FromHours(12);
+        var token = _tokenService.CreateToken(user, expiresIn);
         return Ok(new AuthResponseDto(token, user.Email));
     }
 }

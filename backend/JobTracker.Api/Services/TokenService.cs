@@ -18,7 +18,7 @@ public class TokenService : ITokenService
         _config = config;
     }
 
-    public string CreateToken(User user)
+    public string CreateToken(User user, TimeSpan expiresIn)
     {
         var claims = new List<Claim>
         {
@@ -35,7 +35,7 @@ public class TokenService : ITokenService
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
+            expires: DateTime.UtcNow.Add(expiresIn),
             signingCredentials: creds
         );
 

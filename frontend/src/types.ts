@@ -17,6 +17,8 @@ export interface JobApplication {
   dateApplied: string; // ISO date string, as JSON has no native date type
   postingUrl: string | null;
   notes: string | null;
+  nextFollowUpDate: string | null;
+  isArchived: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +30,7 @@ export interface CreateJobApplicationInput {
   dateApplied: string;
   postingUrl: string | null;
   notes: string | null;
+  nextFollowUpDate: string | null;
 }
 
 export type UpdateJobApplicationInput = CreateJobApplicationInput;
@@ -38,6 +41,15 @@ export interface ApplicationStats {
   interviewing: number;
   offer: number;
   rejected: number;
+  overdueFollowUps: number;
+}
+
+// Mirrors PagedResultDto<T> in the backend.
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
 }
 
 export interface AuthResponse {

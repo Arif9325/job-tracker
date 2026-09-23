@@ -4,6 +4,7 @@ import type {
   AuthResponse,
   CreateJobApplicationInput,
   JobApplication,
+  PagedResult,
   UpdateJobApplicationInput,
 } from "./types";
 
@@ -11,6 +12,29 @@ import type {
 // set to the deployed Azure API's URL. Locally it falls back to the
 // dev API running on your machine.
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5203/api";
+
+// Tries to turn a non-2xx response body into a readable message. The
+// API sometimes returns a plain JSON string (e.g. the lockout message),
+// sometimes an ASP.NET "ProblemDetails" validation error object, and
+// sometimes plain text — this covers all three rather than showing the
+// user a raw, quoted JSON blob.
+async function extractErrorMessage(response: Response): Promise<string> {
+  const text = await response.text();
+  if (!text) return `Request failed with status ${response.status}`;
+
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed === "string") return parsed;
+    if (parsed?.title) return parsed.title;
+    if (parsed?.errors) {
+      const firstError = Object.values(parsed.errors).flat()[0];
+      if (typeof firstError === "string") return firstError;
+    }
+  } catch {
+    // Not JSON — fall through and use the raw text below.
+  }
+  return text;
+}
 
 // A small wrapper around fetch that: builds the full URL, attaches the
 // JWT (if we have one) as an Authorization header, and throws a real
@@ -32,11 +56,10 @@ async function request<T>(
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || `Request failed with status ${response.status}`);
+    throw new Error(await extractErrorMessage(response));
   }
 
-  // DELETE returns 204 No Content — nothing to parse.
+  // DELETE / archive / restore return 204 No Content — nothing to parse.
   if (response.status === 204) {
     return undefined as T;
   }
@@ -59,7 +82,10 @@ export const authApi = {
 };
 
 export const applicationsApi = {
-  getAll: () => request<JobApplication[]>("/applications"),
+  getAll: (page: number, pageSize: number, includeArchived: boolean) =>
+    request<PagedResult<JobApplication>>(
+      `/applications?page=${page}&pageSize=${pageSize}&includeArchived=${includeArchived}`
+    ),
 
   getStats: () => request<ApplicationStats>("/applications/stats"),
 
@@ -75,6 +101,14 @@ export const applicationsApi = {
       body: JSON.stringify(input),
     }),
 
+  archive: (id: number) =>
+    request<void>(`/applications/${id}/archive`, { method: "POST" }),
+
+  restore: (id: number) =>
+    request<void>(`/applications/${id}/restore`, { method: "POST" }),
+
+  // Permanent delete — only succeeds server-side on an already-archived
+  // application.
   delete: (id: number) =>
     request<void>(`/applications/${id}`, { method: "DELETE" }),
 };
